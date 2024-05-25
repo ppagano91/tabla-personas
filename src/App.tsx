@@ -16,8 +16,15 @@ function App() {
     setSortByCountry((prevState) => !prevState);
   };
 
+  const handleDelete = (index:string) => {
+    const fileredUsers = users.filter((user) => {
+      return user.login.uuid !== index;
+    })
+    setUsers(fileredUsers);
+  }
+
   useEffect(() => {
-    fetch("https://randomuser.me/api?results=10")
+    fetch("https://randomuser.me/api?results=100")
       .then( res => res.json())
       .then( res => {
         setUsers(res.results)
@@ -48,7 +55,7 @@ function App() {
           <button onClick={handleSortByCountry}>{sortByCountry?"No ordenar por País":"Ordenar por País"}</button>
         </header>
         <main>
-          <UserTable showColors={showColors} users={sortedUsers}/>
+          <UserTable deleteUser={handleDelete} showColors={showColors} users={sortedUsers}/>
         </main>
     </div>
     </>
