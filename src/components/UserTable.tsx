@@ -15,13 +15,13 @@ export function UserTable({users, showColors, deleteUser}: Props){
                 <th>País</th>
                 <th>Acciones</th>
             </thead>
-            <tbody>
-                {users.map((user, index)=>{
-                    const backgroundColor = index % 2 === 0 ? "#333":"#555";
-                    const color = showColors ? backgroundColor : "transparent";
+            <tbody className={showColors?"table-colors":"table"}>
+                {users.map((user)=>{
+                    // const backgroundColor = index % 2 === 0 ? "#333":"#555";
+                    // const color = showColors ? backgroundColor : "transparent";
 
                     return (
-                        <tr key={user.login.uuid} style={{backgroundColor: color}}>
+                        <tr key={user.login.uuid}>
                             <td>
                                 <img src={user.picture.thumbnail} alt="" />
                             </td>
