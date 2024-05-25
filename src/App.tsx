@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import {type User} from './types.d'
 import { UserTable } from './components/UserTable'
@@ -7,7 +7,8 @@ function App() {
   const [users, setUsers ] = useState<User[]>([]);
   const [showColors, setShowColors ] = useState(false);
   const [sortByCountry, setSortByCountry] = useState(false);
-  const [originalUsers, setOriginalUsers] = useState([])
+  // useRef para guardar un valor que quiero que se comparta entre renderizados pero que al cambiar, no vuelva a renderizar el componente
+  const originalUsers = useRef<User[]>([]);
 
   const toggleColors = () => {
     setShowColors(!showColors);
@@ -25,7 +26,7 @@ function App() {
   }
 
   const handleReset = () => {
-    setUsers(originalUsers);
+    setUsers(originalUsers.current);
   }
 
   useEffect(() => {
@@ -33,7 +34,7 @@ function App() {
       .then( res => res.json())
       .then( res => {
         setUsers(res.results);
-        setOriginalUsers(res.results);
+        originalUsers.current = res.results;
       })
       .catch( error => {
         console.log(error);
