@@ -7,6 +7,7 @@ function App() {
   const [users, setUsers ] = useState<User[]>([]);
   const [showColors, setShowColors ] = useState(false);
   const [sortByCountry, setSortByCountry] = useState(false);
+  const [originalUsers, setOriginalUsers] = useState([])
 
   const toggleColors = () => {
     setShowColors(!showColors);
@@ -23,14 +24,19 @@ function App() {
     setUsers(fileredUsers);
   }
 
+  const handleReset = () => {
+    setUsers(originalUsers);
+  }
+
   useEffect(() => {
     fetch("https://randomuser.me/api?results=100")
       .then( res => res.json())
       .then( res => {
-        setUsers(res.results)
+        setUsers(res.results);
+        setOriginalUsers(res.results);
       })
       .catch( error => {
-        console.log(error)
+        console.log(error);
       })
     return () => {}
   }, [])
@@ -53,6 +59,7 @@ function App() {
         <header>
           <button onClick={toggleColors}>Colorear filas</button>
           <button onClick={handleSortByCountry}>{sortByCountry?"No ordenar por País":"Ordenar por País"}</button>
+          <button onClick={handleReset}>Resetear Tabla</button>
         </header>
         <main>
           <UserTable deleteUser={handleDelete} showColors={showColors} users={sortedUsers}/>
