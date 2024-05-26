@@ -10,11 +10,13 @@ export function UserTable({users, showColors, deleteUser, changeSorting}: Props)
     return (
         <table width="100%">
             <thead>
-                <th>Foto</th>
-                <th className='pointer' onClick={()=>changeSorting(SortBy.NAME)}>Nombre</th>
-                <th className='pointer' onClick={()=>changeSorting(SortBy.LAST)}>Apellido</th>
-                <th className='pointer' onClick={()=>changeSorting(SortBy.COUNTRY)}>País</th>
-                <th>Acciones</th>
+                <tr>
+                    <th>Foto</th>
+                    <th className='pointer' onClick={()=>changeSorting(SortBy.NAME)}>Nombre</th>
+                    <th className='pointer' onClick={()=>changeSorting(SortBy.LAST)}>Apellido</th>
+                    <th className='pointer' onClick={()=>changeSorting(SortBy.COUNTRY)}>País</th>
+                    <th>Acciones</th>
+                </tr>
             </thead>
             <tbody className={showColors?"table-colors":"table"}>
                 {users.map((user)=>{
