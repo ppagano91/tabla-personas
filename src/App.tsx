@@ -3,6 +3,15 @@ import './App.css'
 import {SortBy, type User} from './types.d'
 import { UserTable } from './components/UserTable'
 
+const fetchUsers = async (page: number) => {
+  return await fetch(`https://randomuser.me/api?results=10&seed=dev&page=${page}`)
+      .then( res => {
+        if(!res.ok) throw new Error("Error en la petición");
+        return res.json()}
+      )
+      .then(res => res.results)
+}
+
 function App() {
   const [users, setUsers ] = useState<User[]>([]);
   const [showColors, setShowColors ] = useState(false);
@@ -44,20 +53,13 @@ function App() {
     setLoading(true);
     setError(false);
 
-    fetch(`https://randomuser.me/api?results=10&seed=dev&page=${currentPage}`)
-      .then( async res => {
-        if(!res.ok) throw new Error("Error en la petición");
-        return await res.json()}
-      )
-      .then( res => {
+    fetchUsers(currentPage)
+      .then( users => {
         setUsers(prevUsers => {
-          // Filter out new users that already exist in the current list based on UUID
-          const newUsers = res.results.filter((newUser:User) => 
+          const newUsers = users.filter((newUser:User) =>
             !prevUsers.some(existingUser => existingUser.login.uuid === newUser.login.uuid)
           );
-          // Concatenate the new unique users with the existing users
           const updatedUsers = [...prevUsers, ...newUsers];
-          // Update the reference to the original users
           originalUsers.current = updatedUsers;
           return updatedUsers;
         });
