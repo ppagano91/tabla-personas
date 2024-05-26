@@ -92,3 +92,10 @@ export interface Picture {
     medium:    string;
     thumbnail: string;
 }
+
+export enum SortBy {
+    NONE = 'none',
+    NAME = 'name',
+    LAST = 'last',
+    COUNTRY = 'country'
+}
