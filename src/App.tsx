@@ -45,15 +45,21 @@ function App() {
     setError(false);
 
     fetch(`https://randomuser.me/api?results=10&seed=dev&page=${currentPage}`)
-      .then( res => {
+      .then( async res => {
         if(!res.ok) throw new Error("Error en la petición");
-        return res.json()}
+        return await res.json()}
       )
       .then( res => {
         setUsers(prevUsers => {
-          const newUsers = prevUsers.concat(res.results);
-          originalUsers.current = newUsers;
-          return newUsers;
+          // Filter out new users that already exist in the current list based on UUID
+          const newUsers = res.results.filter((newUser:User) => 
+            !prevUsers.some(existingUser => existingUser.login.uuid === newUser.login.uuid)
+          );
+          // Concatenate the new unique users with the existing users
+          const updatedUsers = [...prevUsers, ...newUsers];
+          // Update the reference to the original users
+          originalUsers.current = updatedUsers;
+          return updatedUsers;
         });
 
       })

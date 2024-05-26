@@ -4,6 +4,7 @@ declare global {
     }
 }
 
+// https://app.quicktype.io/
 export interface APIResults {
     results: User[];
     info:    Info;
