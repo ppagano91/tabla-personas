@@ -9,6 +9,10 @@ function App() {
   const [sorting, setSorting] = useState<SortBy>(SortBy.NONE);
   const [filterCountry, setFilterCountry] = useState<string | null>(null);
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
   // useRef para guardar un valor que quiero que se comparta entre renderizados pero que al cambiar, no vuelva a renderizar el componente
   const originalUsers = useRef<User[]>([]);
 
@@ -37,17 +41,32 @@ function App() {
   }
 
   useEffect(() => {
-    fetch("https://randomuser.me/api?results=100")
-      .then( res => res.json())
+    setLoading(true);
+    setError(false);
+
+    fetch(`https://randomuser.me/api?results=10&seed=dev&page=${currentPage}`)
       .then( res => {
-        setUsers(res.results);
-        originalUsers.current = res.results;
+        if(!res.ok) throw new Error("Error en la petición");
+        return res.json()}
+      )
+      .then( res => {
+        setUsers(prevUsers => {
+          const newUsers = prevUsers.concat(res.results);
+          originalUsers.current = newUsers;
+          return newUsers;
+        });
+
       })
       .catch( error => {
+        setError(true);
         console.log(error);
       })
+      .finally(()=>{
+        setLoading(false);
+      })
+
     return () => {}
-  }, [])
+  }, [currentPage])
 
   const sortUsers = (users: User[]) => {
       return sorting == SortBy.COUNTRY ?
@@ -109,12 +128,18 @@ function App() {
           }}/>
         </header>
         <main>
-          <UserTable
+          {users.length > 0 &&
+            <UserTable
             changeSorting={handleChangeSort}
             deleteUser={handleDelete}
             showColors={showColors}
             users={sortedUsers}
-          />
+            />
+        }
+          {loading && <p>Cargando...</p>}
+          {!loading && error && <p>Ha ocurrido un error</p>}
+          {!loading && !error && users.length === 0 && <p>No hay resultados</p>}
+        {!loading && !error && <button onClick={()=>setCurrentPage(currentPage+1)}>Cargar más resultados</button>}
         </main>
     </div>
     </>
