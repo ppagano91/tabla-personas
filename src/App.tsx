@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import './App.css'
 import {SortBy, type User} from './types.d'
 import { UserTable } from './components/UserTable'
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 
 const fetchUsers = async (page: number) => {
   return await fetch(`https://randomuser.me/api?results=10&seed=dev&page=${page}`)
@@ -10,19 +10,31 @@ const fetchUsers = async (page: number) => {
         if(!res.ok) throw new Error("Error en la petición");
         return res.json()}
       )
-      .then(res => res.results)
+      .then(res => {
+        const currentPage = Number(res.info.page);
+        const nextCursor = currentPage > 10 ? undefined: currentPage + 1;
+        
+        return {
+          users: res.results,
+          nextCursor: nextCursor
+        }
+      })
 }
 
 function App() {
-  const { isLoading, isError, data: users = [] } = useQuery<User[]>({
+  const { isLoading, isError, data, refetch, fetchNextPage, hasNextPage } = useInfiniteQuery<{nextCursor?: number, users:User[]}>(    
+   {
     queryKey: ['users'],
-    queryFn: async () => await fetchUsers(1)
-  })
+    queryFn: ({pageParam = 1}) => fetchUsers(Number(pageParam)),
+    getNextPageParam: (lastPage, allPages, lastPageParam, allPageParams) => lastPage.nextCursor,
+    initialPageParam: 1,
+  }
+)  
+  const users: User[] = data?.pages?.flatMap(page => page.users) ?? [];
 
   const [showColors, setShowColors ] = useState(false);
   const [sorting, setSorting] = useState<SortBy>(SortBy.NONE);
   const [filterCountry, setFilterCountry] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
 
   // useRef para guardar un valor que quiero que se comparta entre renderizados pero que al cambiar, no vuelva a renderizar el componente
   // const originalUsers = useRef<User[]>([]);
@@ -43,8 +55,8 @@ function App() {
     // setUsers(fileredUsers);
   }
 
-  const handleReset = () => {
-    // setUsers(originalUsers.current);
+  const handleReset = async () => {
+    await refetch();
   }
 
   const handleChangeSort = (sort: SortBy) => {
@@ -123,7 +135,8 @@ function App() {
           {isLoading && <p>Cargando...</p>}
           {!isLoading && isError && <p>Ha ocurrido un error</p>}
           {!isLoading && !isError && users.length === 0 && <p>No hay resultados</p>}
-        {!isLoading && !isError && <button onClick={()=>setCurrentPage(currentPage+1)}>Cargar más resultados</button>}
+          {!isLoading && !isError && hasNextPage === true && <button onClick={() => fetchNextPage()}>Cargar más resultados</button>}
+          {!isLoading && !isError && hasNextPage === true && <p>FIN</p>}
         </main>
     </div>
     </>
