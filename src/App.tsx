@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import './App.css'
 import {SortBy, type User} from './types.d'
 import { UserTable } from './components/UserTable'
+import { useQuery } from '@tanstack/react-query'
 
 const fetchUsers = async (page: number) => {
   return await fetch(`https://randomuser.me/api?results=10&seed=dev&page=${page}`)
@@ -13,17 +14,18 @@ const fetchUsers = async (page: number) => {
 }
 
 function App() {
-  const [users, setUsers ] = useState<User[]>([]);
+  const { isLoading, isError, data: users = [] } = useQuery<User[]>({
+    queryKey: ['users'],
+    queryFn: async () => await fetchUsers(1)
+  })
+
   const [showColors, setShowColors ] = useState(false);
   const [sorting, setSorting] = useState<SortBy>(SortBy.NONE);
   const [filterCountry, setFilterCountry] = useState<string | null>(null);
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
   // useRef para guardar un valor que quiero que se comparta entre renderizados pero que al cambiar, no vuelva a renderizar el componente
-  const originalUsers = useRef<User[]>([]);
+  // const originalUsers = useRef<User[]>([]);
 
   const toggleColors = () => {
     setShowColors(!showColors);
@@ -38,43 +40,17 @@ function App() {
     const fileredUsers = users.filter((user) => {
       return user.login.uuid !== index;
     })
-    setUsers(fileredUsers);
+    // setUsers(fileredUsers);
   }
 
   const handleReset = () => {
-    setUsers(originalUsers.current);
+    // setUsers(originalUsers.current);
   }
 
   const handleChangeSort = (sort: SortBy) => {
     setSorting(sort);
   }
 
-  useEffect(() => {
-    setLoading(true);
-    setError(false);
-
-    fetchUsers(currentPage)
-      .then( users => {
-        setUsers(prevUsers => {
-          const newUsers = users.filter((newUser:User) =>
-            !prevUsers.some(existingUser => existingUser.login.uuid === newUser.login.uuid)
-          );
-          const updatedUsers = [...prevUsers, ...newUsers];
-          originalUsers.current = updatedUsers;
-          return updatedUsers;
-        });
-
-      })
-      .catch( error => {
-        setError(true);
-        console.log(error);
-      })
-      .finally(()=>{
-        setLoading(false);
-      })
-
-    return () => {}
-  }, [currentPage])
 
   const sortUsers = (users: User[]) => {
       return sorting == SortBy.COUNTRY ?
@@ -144,10 +120,10 @@ function App() {
             users={sortedUsers}
             />
         }
-          {loading && <p>Cargando...</p>}
-          {!loading && error && <p>Ha ocurrido un error</p>}
-          {!loading && !error && users.length === 0 && <p>No hay resultados</p>}
-        {!loading && !error && <button onClick={()=>setCurrentPage(currentPage+1)}>Cargar más resultados</button>}
+          {isLoading && <p>Cargando...</p>}
+          {!isLoading && isError && <p>Ha ocurrido un error</p>}
+          {!isLoading && !isError && users.length === 0 && <p>No hay resultados</p>}
+        {!isLoading && !isError && <button onClick={()=>setCurrentPage(currentPage+1)}>Cargar más resultados</button>}
         </main>
     </div>
     </>
