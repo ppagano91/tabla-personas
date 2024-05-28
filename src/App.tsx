@@ -3,6 +3,7 @@ import './App.css'
 import {SortBy, type User} from './types.d'
 import { UserTable } from './components/UserTable'
 import { useUsers } from './hooks/useUsers'
+import Results from './components/Results'
 
 
 
@@ -93,6 +94,7 @@ function App() {
     <>
     <div className='App'>
         <h1>Prueba Técnica</h1>
+        <Results/>
         <header style={{display: "flex", alignItems:"center", justifyContent: "center", gap: "1rem"}}>
           <button onClick={toggleColors}>Colorear filas</button>
           <button onClick={handleSortByCountry}>{sorting == SortBy.COUNTRY ?"No ordenar por País":"Ordenar por País"}</button>
@@ -114,7 +116,7 @@ function App() {
           {!isLoading && isError && <p>Ha ocurrido un error</p>}
           {!isLoading && !isError && users.length === 0 && <p>No hay resultados</p>}
           {!isLoading && !isError && hasNextPage === true && <button onClick={() => fetchNextPage()}>Cargar más resultados</button>}
-          {!isLoading && !isError && hasNextPage === true && <p>FIN</p>}
+          {!isLoading && !isError && !hasNextPage === true && <p>FIN</p>}
         </main>
     </div>
     </>

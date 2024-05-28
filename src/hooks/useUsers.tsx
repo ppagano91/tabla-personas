@@ -9,6 +9,7 @@ export const useUsers = () => {
          queryFn: ({pageParam = 1}) => fetchUsers(Number(pageParam)),
          getNextPageParam: (lastPage) => lastPage.nextCursor,
          initialPageParam: 1,
+         refetchOnWindowFocus: false
        }
     )
 
